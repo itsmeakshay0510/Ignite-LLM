@@ -429,68 +429,6 @@ print(output)
 
 ---
 
-## Need More Power? Cheap Cloud Options
-
-Your RTX 3060 handles everything up to ~85M params comfortably. If you want to train a bigger model without buying new hardware, here are the cheapest options — no subscription, pay only for what you use:
-
-### Option 1 — Vast.ai ⭐ Cheapest & Easiest
-
-[vast.ai](https://vast.ai) is a marketplace where people rent out their home GPUs. You pick a machine and pay by the hour.
-
-**What to rent:** Search for `RTX 4090` or `RTX 3090` — typically **$0.20–$0.40/hr**. A 100M param model trains in ~5 hours = **$1–2 total.**
-
-**Setup on Vast.ai:**
-1. Create account at [vast.ai](https://vast.ai), add $5 credit
-2. Search for a machine with `PyTorch` image pre-installed
-3. Click "Rent" → SSH into the machine
-4. Run these commands:
-```bash
-git clone https://github.com/yourusername/Ignite-LLM.git
-cd Ignite-LLM
-pip install -r requirements.txt
-python data/preprocess.py --dataset tinyshakespeare
-python train.py
-```
-5. When done, download your checkpoint: `scp user@host:~/Ignite-LLM/checkpoints/best.pt ./`
-6. Destroy the instance — you stop paying immediately.
-
-### Option 2 — Google Colab (Free Tier)
-
-[colab.research.google.com](https://colab.research.google.com) — completely free, no credit card.
-
-Free tier gives you a T4 GPU (16GB VRAM) for ~4 hours at a time. Enough to train the Small model from start to finish.
-
-**Limitation:** Session disconnects after ~4 hours. Save checkpoints to Google Drive so you can resume.
-
-```python
-# At the top of your Colab notebook:
-from google.colab import drive
-drive.mount('/content/drive')
-
-# Point checkpoints to Drive so they survive disconnects:
-# In config.py: checkpoint_dir = "/content/drive/MyDrive/Ignite-LLM/checkpoints"
-```
-
-Then just paste the Quick Start commands into Colab cells and run.
-
-### Option 3 — Kaggle Notebooks (Free, 30 hrs/week GPU)
-
-[kaggle.com/code](https://kaggle.com/code) — free GPU (P100, 16GB VRAM), 30 hours per week, persistent storage.
-
-Best for longer training runs since Kaggle saves your notebook output automatically. Just upload your files as a Dataset and run training in a notebook.
-
-### Quick Comparison
-
-| Platform | Cost | GPU | VRAM | Best For |
-|----------|------|-----|------|----------|
-| Your RTX 3060 | Free | RTX 3060 | 8GB | Small & Medium models |
-| Google Colab Free | Free | T4 | 16GB | Quick experiments |
-| Kaggle Free | Free | P100 | 16GB | Longer free runs |
-| Vast.ai | ~$0.30/hr | RTX 4090 | 24GB | Large models, fast |
-
-**Recommendation:** Start locally on your RTX 3060 with the Small config. If you want to train something bigger, Vast.ai gives you the most GPU for the least money with zero commitment.
-
----
 
 ## Roadmap
 
@@ -507,28 +445,6 @@ Best for longer training runs since Kaggle saves your notebook output automatica
 [ ]  Phase 9  — Fine-tuning on domain-specific data
 [ ]  Phase 10 — RLHF / instruction tuning (long-term)
 ```
-
----
-
-## Technical Deep Dives
-
-**Attention is all you need — but why?**
-Traditional RNNs process tokens sequentially — they forget distant context. Attention lets every token look at every other token simultaneously. This is why Transformers parallelized so well on GPUs and why they scaled so far.
-
-**Why pre-norm instead of post-norm?**
-Original "Attention is All You Need" used post-norm (LayerNorm after residual). Modern practice (GPT-3, LLaMA) uses pre-norm (LayerNorm before sub-layer). Pre-norm makes training more stable — gradients flow more cleanly at depth.
-
-**Why RoPE instead of sinusoidal positional encoding?**
-Sinusoidal PE adds position information to token embeddings. RoPE rotates the Q and K vectors by an angle proportional to position — attention scores depend only on *relative* position, not absolute. Better generalisation to longer sequences.
-
-**Why GELU instead of ReLU?**
-ReLU is `max(0, x)` — hard zero for negatives. GELU smoothly suppresses negatives. This produces richer gradients and empirically works better in language models.
-
-**Why AdamW instead of Adam?**
-Adam's weight decay is coupled to the adaptive learning rate — it doesn't actually regularize correctly. AdamW decouples weight decay, applying it directly to the weights. Standard in all modern LLM training.
-
-**Why bfloat16 instead of float32?**
-float32 uses 32 bits per number. bfloat16 uses 16 bits — half the memory, so twice as many parameters fit in VRAM. The RTX 3060 (Ampere architecture) supports bfloat16 natively with no precision loss compared to float16.
 
 ---
 
