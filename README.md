@@ -67,7 +67,7 @@ This exists for one reason: **to understand.** Not just to use.
 
 ---
 
-## Your Hardware — What It Can Do
+## My Hardware — What It Can Do
 
 You have an **NVIDIA GeForce RTX 3060 8GB + 64GB RAM**. Here's exactly what that means for Ignite-LLM:
 
